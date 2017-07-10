@@ -39,6 +39,9 @@ class AbstractBot(object):
         # reffer http://answers.ros.org/question/219029/getting-depth-information-from-point-using-python/
         self.depth_sub = rospy.Subscriber('/camera/depth/image_raw', Image, self.depthCallback)        
 
+        # view gui flag
+        self.cv_view = True
+
     # bumper topic call back sample
     # update bumper state
     def bumperCallback(self, data):
@@ -68,8 +71,9 @@ class AbstractBot(object):
         except CvBridgeError as e:
             print(e)
 
-        cv2.imshow("Image window", cv_image)
-        cv2.waitKey(3)
+        if self.cv_view == True:
+            cv2.imshow("Image window", cv_image)
+            cv2.waitKey(3)
 
     # camera image call back sample
     # comvert image topic to opencv object and show
@@ -83,8 +87,9 @@ class AbstractBot(object):
         depth_array = np.array(depth_image, dtype=np.float32)
         cv2.normalize(depth_array, depth_array, 0, 1, cv2.NORM_MINMAX)
 
-        cv2.imshow("Depth window", depth_array)
-        cv2.waitKey(3)        
+        if self.cv_view == True:
+            cv2.imshow("Depth window", depth_array)
+            cv2.waitKey(3)        
 
     @abstractmethod
     def strategy(self):
