@@ -38,7 +38,7 @@ class RandomBot(AbstractBot):
                 value = random.randint(1,1000)
                 if value < 500:
                     #x = 1
-                    x = 10                    
+                    x = 5                    
                     th = 0
 
                 elif value < 750:

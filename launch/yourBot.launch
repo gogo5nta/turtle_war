@@ -1,4 +1,4 @@
 <launch>
-  <!-- your_definition -->
+  <!-- commentout forr vscode debug randomBot.py -->
   <!-- <node pkg="turtle_war" type="randomBot.py" name="randomBot" output="screen"/> -->
 </launch>
