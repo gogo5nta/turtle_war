@@ -8,7 +8,7 @@ from gazebo_msgs.msg import ModelStates
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 import cv2
-
+import numpy as np
 
 class AbstractBot(object):
     __metaclass__ = ABCMeta
@@ -34,7 +34,10 @@ class AbstractBot(object):
 
         # camera subscriver
         # please uncoment out if you use camera
-        #self.image_sub = rospy.Subscriber('/camera/rgb/image_raw', Image, self.imageCallback)
+        # reffer http://wiki.ros.org/cv_bridge/Tutorials/ConvertingBetweenROSImagesAndOpenCVImagesPython
+        self.image_sub = rospy.Subscriber('/camera/rgb/image_raw',   Image, self.imageCallback)
+        # reffer http://answers.ros.org/question/219029/getting-depth-information-from-point-using-python/
+        self.depth_sub = rospy.Subscriber('/camera/depth/image_raw', Image, self.depthCallback)        
 
     # bumper topic call back sample
     # update bumper state
@@ -67,6 +70,21 @@ class AbstractBot(object):
 
         cv2.imshow("Image window", cv_image)
         cv2.waitKey(3)
+
+    # camera image call back sample
+    # comvert image topic to opencv object and show
+    def depthCallback(self, data):
+        try:
+            #depth_image = self.bridge.imgmsg_to_cv2(data, "32FC1")
+            depth_image = self.bridge.imgmsg_to_cv2(data, "passthrough")            
+        except CvBridgeError as e:
+            print(e)
+
+        depth_array = np.array(depth_image, dtype=np.float32)
+        cv2.normalize(depth_array, depth_array, 0, 1, cv2.NORM_MINMAX)
+
+        cv2.imshow("Depth window", depth_array)
+        cv2.waitKey(3)        
 
     @abstractmethod
     def strategy(self):
