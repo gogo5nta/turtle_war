@@ -94,9 +94,18 @@ class AbstractBot(object):
         depth_array = np.array(depth_image_half, dtype=np.float32)        
         cv2.normalize(depth_array, depth_array, 0, 1, cv2.NORM_MINMAX)
 
+        # --- test Red Region ---
+        # https://www.blog.umentu.work/python3-opencv3%E3%81%A7%E6%8C%87%E5%AE%9A%E3%81%97%E3%81%9F%E8%89%B2%E3%81%AE%E3%81%BF%E3%82%92%E6%8A%BD%E5%87%BA%E3%81%97%E3%81%A6%E8%A1%A8%E7%A4%BA%E3%81%99%E3%82%8B%E3%80%90%E5%8B%95%E7%94%BB/
+        # BGR
+        lower_red = np.array([0,    0,    0])
+        upper_red = np.array([8,    8,  255])       
+        red_mask = cv2.inRange(rgb_image_half, lower_red, upper_red)
+        red_image = cv2.bitwise_and(rgb_image_half, rgb_image_half, mask=red_mask) 
+
         if self.cv_view == True:
             cv2.imshow("Image window", rgb_image_half)            
             cv2.imshow("Depth window", depth_array)
+            cv2.imshow("Red Image window", red_image)
             cv2.waitKey(1)
 
     @abstractmethod
