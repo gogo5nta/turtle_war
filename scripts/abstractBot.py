@@ -47,6 +47,10 @@ class AbstractBot(object):
         # view gui flag
         self.cv_view = True
 
+        # red region near position
+        self.red_loc = np.zeros((2))
+        self.yel_loc = np.zeros((2))        
+
     # bumper topic call back sample
     # update bumper state
     def bumperCallback(self, data):
@@ -77,7 +81,7 @@ class AbstractBot(object):
             # resize  http://tatabox.hatenablog.com/entry/2013/07/15/164015
             h = rgb_image.shape[0]
             w = rgb_image.shape[1]            
-            rgb_image_half = cv2.resize(rgb_image,(w/2,h/2))
+            rgb_image_ = cv2.resize(rgb_image,(w/4,h/4))
 
             # reffer http://answers.ros.org/question/58902/how-to-store-the-depth-data-from-kinectcameradepth_registreredimage_raw-as-gray-scale-image/
             #depth_image = self.bridge.imgmsg_to_cv2(depth_data, "32FC1")            
@@ -86,27 +90,60 @@ class AbstractBot(object):
             # resize  http://tatabox.hatenablog.com/entry/2013/07/15/164015            
             h = depth_image.shape[0]
             w = depth_image.shape[1]
-            depth_image_half = cv2.resize(depth_image,(w/2,h/2))            
+            depth_image_ = cv2.resize(depth_image,(w/4,h/4))            
         except CvBridgeError, e:
             print e
 
         #depth_array = np.array(depth_image, dtype=np.float32)
-        depth_array = np.array(depth_image_half, dtype=np.float32)        
+        depth_array = np.array(depth_image_, dtype=np.float32)        
         cv2.normalize(depth_array, depth_array, 0, 1, cv2.NORM_MINMAX)
 
         # --- test Red Region ---
         # https://www.blog.umentu.work/python3-opencv3%E3%81%A7%E6%8C%87%E5%AE%9A%E3%81%97%E3%81%9F%E8%89%B2%E3%81%AE%E3%81%BF%E3%82%92%E6%8A%BD%E5%87%BA%E3%81%97%E3%81%A6%E8%A1%A8%E7%A4%BA%E3%81%99%E3%82%8B%E3%80%90%E5%8B%95%E7%94%BB/
-        # BGR
-        lower_red = np.array([0,    0,    0])
+        # BGR array
+        # extract red region
+        lower_red = np.array([0,    0,   64])
         upper_red = np.array([8,    8,  255])       
-        red_mask = cv2.inRange(rgb_image_half, lower_red, upper_red)
-        red_image = cv2.bitwise_and(rgb_image_half, rgb_image_half, mask=red_mask) 
+        red_mask = cv2.inRange(rgb_image_, lower_red, upper_red)
+        red_image = cv2.bitwise_and(rgb_image_, rgb_image_,   mask=red_mask) 
+        red_depth = cv2.bitwise_and(depth_array, depth_array, mask=red_mask)
+
+        # extract yellow region
+        lower_yel = np.array([0,    64,   64])
+        upper_yel = np.array([8,    255,  255])       
+        yel_mask = cv2.inRange(rgb_image_, lower_yel, upper_yel)
+        yel_image = cv2.bitwise_and(rgb_image_, rgb_image_,   mask=yel_mask)
+        yel_depth = cv2.bitwise_and(depth_array, depth_array, mask=yel_mask)        
+
+        # extract depth region
+        # lower_dep = 0.0
+        # upper_dep = 0.2      
+        # dep_mask = cv2.inRange(depth_array, lower_dep, upper_dep)
+        # dep_image = cv2.bitwise_and(rgb_image_, rgb_image_, mask=dep_mask)
+
+        # extract max value
+        # http://labs.eecs.tottori-u.ac.jp/sd/Member/oyamada/OpenCV/html/py_tutorials/py_imgproc/py_contours/py_contour_properties/py_contour_properties.html#contour-properties
+        # --- search red near area ---
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(red_depth, mask=red_mask)
+        self.red_loc = min_loc;
+        # if not exit max_loc = [-1, -1]
+        cv2.circle(red_image, self.red_loc, 3, (255, 255, 255), -1)
+
+        # --- search yellow near area ---
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(yel_depth, mask=yel_mask)
+        self.yel_loc = min_loc;
+        # if not exit max_loc = [-1, -1]        
+        cv2.circle(yel_image, self.yel_loc, 3, (255, 255, 255), -1)
 
         if self.cv_view == True:
-            cv2.imshow("Image window", rgb_image_half)            
+            cv2.imshow("Image window", rgb_image_)            
             cv2.imshow("Depth window", depth_array)
             cv2.imshow("Red Image window", red_image)
-            cv2.waitKey(1)
+            #cv2.imshow("Red Depth window", red_depth)
+            cv2.imshow("Yellow Image window", yel_image)
+            #cv2.imshow("Yellow Depth window", yel_depth)                        
+            #cv2.imshow("near depth Image window", dep_image)                        
+            cv2.waitKey(10)
 
     @abstractmethod
     def strategy(self):
