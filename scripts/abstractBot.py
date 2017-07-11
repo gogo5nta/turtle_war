@@ -6,6 +6,8 @@ from geometry_msgs.msg import Twist
 from kobuki_msgs.msg import BumperEvent
 from gazebo_msgs.msg import ModelStates 
 from sensor_msgs.msg import Image
+import message_filters
+
 from cv_bridge import CvBridge, CvBridgeError
 import cv2
 import numpy as np
@@ -34,10 +36,13 @@ class AbstractBot(object):
 
         # camera subscriver
         # please uncoment out if you use camera
-        # reffer http://wiki.ros.org/cv_bridge/Tutorials/ConvertingBetweenROSImagesAndOpenCVImagesPython
-        self.image_sub = rospy.Subscriber('/camera/rgb/image_raw',   Image, self.imageCallback)
-        # reffer http://answers.ros.org/question/219029/getting-depth-information-from-point-using-python/
-        self.depth_sub = rospy.Subscriber('/camera/depth/image_raw', Image, self.depthCallback)        
+        # get rgb and depth image  http://answers.ros.org/question/219029/getting-depth-information-from-point-using-python/
+        self.image_sub = message_filters.Subscriber("camera/rgb/image_raw", Image)
+        self.depth_sub = message_filters.Subscriber("camera/depth/image_raw", Image)
+
+        # ApproximateTimeSynchronizer http://docs.ros.org/api/message_filters/html/python/
+        self.ts = message_filters.ApproximateTimeSynchronizer([self.image_sub, self.depth_sub], 1, 0.5)
+        self.ts.registerCallback(self.imageDepthcallback)
 
         # view gui flag
         self.cv_view = True
@@ -65,31 +70,34 @@ class AbstractBot(object):
 
     # camera image call back sample
     # comvert image topic to opencv object and show
-    def imageCallback(self, data):
+    def imageDepthcallback(self, rgb_data, depth_data):
         try:
-            cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
-        except CvBridgeError as e:
-            print(e)
+            rgb_image   = self.bridge.imgmsg_to_cv2(rgb_data,   "bgr8")
 
-        if self.cv_view == True:
-            cv2.imshow("Image window", cv_image)
-            cv2.waitKey(3)
+            # resize  http://tatabox.hatenablog.com/entry/2013/07/15/164015
+            h = rgb_image.shape[0]
+            w = rgb_image.shape[1]            
+            rgb_image_half = cv2.resize(rgb_image,(w/2,h/2))
 
-    # camera image call back sample
-    # comvert image topic to opencv object and show
-    def depthCallback(self, data):
-        try:
-            #depth_image = self.bridge.imgmsg_to_cv2(data, "32FC1")
-            depth_image = self.bridge.imgmsg_to_cv2(data, "passthrough")            
-        except CvBridgeError as e:
-            print(e)
+            # reffer http://answers.ros.org/question/58902/how-to-store-the-depth-data-from-kinectcameradepth_registreredimage_raw-as-gray-scale-image/
+            #depth_image = self.bridge.imgmsg_to_cv2(depth_data, "32FC1")            
+            depth_image = self.bridge.imgmsg_to_cv2(depth_data, "passthrough")
 
-        depth_array = np.array(depth_image, dtype=np.float32)
+            # resize  http://tatabox.hatenablog.com/entry/2013/07/15/164015            
+            h = depth_image.shape[0]
+            w = depth_image.shape[1]
+            depth_image_half = cv2.resize(depth_image,(w/2,h/2))            
+        except CvBridgeError, e:
+            print e
+
+        #depth_array = np.array(depth_image, dtype=np.float32)
+        depth_array = np.array(depth_image_half, dtype=np.float32)        
         cv2.normalize(depth_array, depth_array, 0, 1, cv2.NORM_MINMAX)
 
         if self.cv_view == True:
+            cv2.imshow("Image window", rgb_image_half)            
             cv2.imshow("Depth window", depth_array)
-            cv2.waitKey(3)        
+            cv2.waitKey(1)
 
     @abstractmethod
     def strategy(self):

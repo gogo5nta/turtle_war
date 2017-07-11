@@ -3,19 +3,29 @@ debug.txt
 
 1. vscodeでpythonデバッグ環境を構築
 
-2. turtle_war/scripts/yourBot.launchを編集
+2. turtle_war/scripts/spawn_robot.launchを編集
    randomBot.byをコメントアウト
---- yourBot.launch ---
-<launch>
-  <!-- your_definition -->
-  <!-- <node pkg="turtle_war" type="randomBot.py" name="randomBot" output="screen"/> -->
+--- spawn_robot.launch.launch --
+   ・
+   ・
+  <!-- commentout forr vscode debug randomBot.py -->
+  <!-- 
+  <include file="$(find turtle_war)/launch/yourBot.launch"> 
+  </include>
+  -->
 </launch>
 -----
 
-3. terminalを二つ開き、start.shを手動で実施
- t1: gnome-terminal -e "/opt/ros/indigo/bin/roslaunch turtle_war make_field.launch"
+3. debug1.sh, debug2.shのパーミッションを変更
+   chmod 777 debug*
+
+4. terminalを二つ開き、start.shを手動で実施
+ terminal1: $ debug1.sh
+ ( gnome-terminal -e "/opt/ros/indigo/bin/roslaunch turtle_war make_field.launch" )
+   ↓
+ terminal2: $ debug2.sh
+ ( gnome-terminal -e "/opt/ros/indigo/bin/roslaunch turtle_war spawn_robot.launch")
   ↓
- VSCodeでscripts/randomBot.pyをデバッグ実効(pythonでデバッグ)
-  ↓
- t2: gnome-terminal -e "/opt/ros/indigo/bin/roslaunch turtle_war spawn_robot.launch"
+ VSCodeでscripts/randomBot.pyをデバッグ実効(pythonでデバッグ。フォーカスはrandomBot.py)
+
 

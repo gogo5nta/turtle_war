@@ -15,6 +15,9 @@
     <param name="publish_frequency" type="double" value="30.0" />
   </node>
 
-  <include file="$(find turtle_war)/launch/yourBot.launch">
+  <!-- commentout forr vscode debug randomBot.py -->
+  <!-- 
+  <include file="$(find turtle_war)/launch/yourBot.launch"> 
   </include>
+  -->
 </launch>
