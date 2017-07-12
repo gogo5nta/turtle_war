@@ -47,9 +47,20 @@ class AbstractBot(object):
         # view gui flag
         self.cv_view = True
 
-        # red region near position
+        # red region near position(loc) and distance(val)
         self.red_loc = np.zeros((2))
-        self.yel_loc = np.zeros((2))        
+        self.red_val = np.array([0.0])
+
+        # yellow region near position(loc) and distance(val)
+        self.yel_loc = np.zeros((2))
+        self.yel_val = np.array([0.0])
+
+        # center position and max value
+        self.loc_centor_x  = np.array([1])
+        self.loc_max_x     = np.array([2])
+
+        # step
+        self.step = np.array([0])
 
     # bumper topic call back sample
     # update bumper state
@@ -82,6 +93,13 @@ class AbstractBot(object):
             h = rgb_image.shape[0]
             w = rgb_image.shape[1]            
             rgb_image_ = cv2.resize(rgb_image,(w/4,h/4))
+
+            if w <= 0:
+                self.loc_centor_x = 640/8;
+                self.loc_max_x    = 640/4;                
+            else:
+                self.loc_centor_x = w/8;
+                self.loc_max_x    = w/4;
 
             # reffer http://answers.ros.org/question/58902/how-to-store-the-depth-data-from-kinectcameradepth_registreredimage_raw-as-gray-scale-image/
             #depth_image = self.bridge.imgmsg_to_cv2(depth_data, "32FC1")            
@@ -125,15 +143,43 @@ class AbstractBot(object):
         # http://labs.eecs.tottori-u.ac.jp/sd/Member/oyamada/OpenCV/html/py_tutorials/py_imgproc/py_contours/py_contour_properties/py_contour_properties.html#contour-properties
         # --- search red near area ---
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(red_depth, mask=red_mask)
-        self.red_loc = min_loc;
+        self.red_loc = min_loc
+        self.red_val = min_val
         # if not exit max_loc = [-1, -1]
-        cv2.circle(red_image, self.red_loc, 3, (255, 255, 255), -1)
+        #cv2.circle(red_image, self.red_loc, 3, (255, 255, 255), -1)
+        r = int((1.0 - self.red_val)*10.0)
+        if r < 0 :
+            r = 0
+        if min_loc[0] == -1 and min_loc[1] == -1 :
+            r = 0
+        cv2.circle(red_image, self.red_loc, r, (255, 255, 255), -1)        
 
         # --- search yellow near area ---
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(yel_depth, mask=yel_mask)
-        self.yel_loc = min_loc;
+        self.yel_loc = min_loc
+        self.yel_val = min_val
         # if not exit max_loc = [-1, -1]        
-        cv2.circle(yel_image, self.yel_loc, 3, (255, 255, 255), -1)
+        # cv2.circle(yel_image, self.yel_loc, 3, (255, 255, 255), -1)
+        r = int((1.0 - self.yel_val)*10.0)
+        if r < 0 :
+            r = 0
+        if min_loc[0] == -1 and min_loc[1] == -1 :
+            r = 0            
+        cv2.circle(yel_image, self.yel_loc, r, (255, 255, 255), -1)
+
+        # --- debug ---------------------------------------------
+        # step0 (random white)
+        if self.step == 0:
+            cv2.rectangle(rgb_image_, (0,0), (160,120), (255, 255, 255), 3)
+        # step1 (yellow)            
+        elif self.step == 1:
+            cv2.rectangle(rgb_image_, (0,0), (160,120), (0, 255, 255), 3)
+        # step2 (red)            
+        elif self.step == 2:
+            cv2.rectangle(rgb_image_, (0,0), (160,120), (0, 0, 255), 3)
+        # step3 (turn)            
+        elif self.step == 3:
+            cv2.rectangle(rgb_image_, (0,0), (160,120), (0, 255, 0), 3) 
 
         if self.cv_view == True:
             cv2.imshow("Image window", rgb_image_)            
