@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import rospy
 import rospkg
 import random
@@ -38,15 +39,17 @@ class RandomBot(AbstractBot):
         sp = 0.0
 
         while not rospy.is_shutdown():
+            # step5: bumper            
             if self.center_bumper or self.left_bumper or self.right_bumper:
+                self.step = 5                                
                 update_time = time.time()
                 rospy.loginfo('bumper hit!!')
 
                 control_speed = -1
                 target_speed  = -1
 
-                control_turn = 3
-                target_turn  = 3
+                control_turn = 1.5
+                target_turn  = 1.5
 
                 # init
                 th_cnt = 0.0
@@ -55,12 +58,36 @@ class RandomBot(AbstractBot):
                 red_flag = False
                 rot_flag = False
 
+            # --- use rgb and depth data ---
+            # step6: neal wall
+            #elif 0.01 > self.L_val or 0.01 > self.R_val or 0.01 > self.M_val:
+            elif 0.05 > self.M_val:    
+                self.step = 6                
+                update_time = time.time()
+                rospy.loginfo('near wall ---- !!')
+
+                control_speed = -0.5
+                target_speed  = -0.5
+
+                if self.L_val > self.R_val:
+                    control_turn = 0.7
+                    target_turn  = 0.7
+                else:
+                    control_turn = -0.7
+                    target_turn  = -0.7
+
+                # init
+                th_cnt = 0.0
+                bum_flag = True                
+                yel_flag = False
+                red_flag = False
+                rot_flag = False                
+
             elif time.time() - update_time > UPDATE_FREQUENCY:
                 update_time = time.time()
                 
                 # --- use rgb and depth data ---
                 # step1: extract yellow (yellow)
-                # 
                 if self.yel_loc[0] != -1 and self.yel_loc[1] != -1:
                     self.step = 1
 
@@ -159,22 +186,22 @@ class RandomBot(AbstractBot):
                     target_turn  = 2.0
                     th_cnt = th_cnt +1
 
-                # step0: random (while)
+                # step4: random (while)
                 else:
-                    self.step = 0
+                    self.step = 4
                     
                     # init
-                    th_cnt =   100
+                    th_cnt =   th_cnt - 1
                     yel_flag = False
                     red_flag = False
                     rot_flag = False                    
 
                     # random  http://www.python-izm.com/contents/application/random.shtml
-                    target_speed  = random.uniform(-1, 1)
-                    target_turn   = random.uniform(-1.5, 1.5)                    
+                    target_speed  = random.uniform(-2, -1)
+                    target_turn   = random.uniform(-3.0, -1.5)                    
 
             #print http://programming-study.com/technology/python-print/
-            print('speed(%f, %f)_turn(%f, %f)_th(%f)_sp(%f)' %(target_speed, control_speed, target_turn, control_turn, th, sp))
+            print('speed(%f, %f)_turn(%f, %f)_th(%f)_sp(%f)_(%f, %f, %f)_ave(%f)' %(target_speed, control_speed, target_turn, control_turn, th, sp, self.L_val, self.M_val, self.R_val, self.ave_val))
 
             # def 0.02
             del_speed  = 0.04

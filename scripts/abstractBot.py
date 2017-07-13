@@ -61,6 +61,9 @@ class AbstractBot(object):
 
         # average depth
         self.ave_val = np.array([0.0])
+        self.M_val = np.array([0.0])
+        self.L_val = np.array([0.0])
+        self.R_val = np.array([0.0])        
 
         # step
         self.step = np.array([0])
@@ -124,11 +127,18 @@ class AbstractBot(object):
         #get middle average depth
         #get 1row    http://qiita.com/supersaiakujin/items/d63c73bb7b5aac43898a
         #cal average http://programming.blogo.jp/python/average 
-        mid = depth_array[60, ]
-        if 0 < len(mid):
+
+        mid = depth_array[60,:]
+        if 0 < len(mid) and sum(mid) != 0:
             self.ave_val = sum(mid) / len(mid)
         else:
             self.ave_val = 0
+
+        # array access  http://qiita.com/supersaiakujin/items/d63c73bb7b5aac43898a
+        
+        self.L_val = depth_array[ 60,  2]
+        self.M_val = depth_array[ 60, 80]
+        self.R_val = depth_array[ 60,158]
 
         # --- test Red Region ---
         # https://www.blog.umentu.work/python3-opencv3%E3%81%A7%E6%8C%87%E5%AE%9A%E3%81%97%E3%81%9F%E8%89%B2%E3%81%AE%E3%81%BF%E3%82%92%E6%8A%BD%E5%87%BA%E3%81%97%E3%81%A6%E8%A1%A8%E7%A4%BA%E3%81%99%E3%82%8B%E3%80%90%E5%8B%95%E7%94%BB/
@@ -182,9 +192,12 @@ class AbstractBot(object):
         cv2.circle(yel_image, self.yel_loc, r, (255, 255, 255), -1)
 
         # --- debug ---------------------------------------------
-        # step0 (random white)
-        if self.step == 0:
-            cv2.rectangle(rgb_image_, (0,0), (160,120), (255, 255, 255), 3)
+        # step5 (bumper white)
+        if self.step == 5:
+            cv2.rectangle(rgb_image_, (0,0), (160,120), (255, 0, 0), 3)
+        # step6 (near wall)
+        if self.step == 6:
+            cv2.rectangle(rgb_image_, (0,0), (160,120), (255, 255, 0), 3)            
         # step1 (yellow)            
         elif self.step == 1:
             cv2.rectangle(rgb_image_, (0,0), (160,120), (0, 255, 255), 3)
@@ -194,6 +207,9 @@ class AbstractBot(object):
         # step3 (turn)            
         elif self.step == 3:
             cv2.rectangle(rgb_image_, (0,0), (160,120), (0, 255, 0), 3) 
+        # step4 (random white)            
+        elif self.step == 4:
+            cv2.rectangle(rgb_image_, (0,0), (160,120), (255, 255, 255), 3)
 
         if self.cv_view == True:
             cv2.imshow("Image window", rgb_image_)            
