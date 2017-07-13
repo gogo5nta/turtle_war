@@ -41,7 +41,7 @@ class AbstractBot(object):
         self.depth_sub = message_filters.Subscriber("camera/depth/image_raw", Image)
 
         # ApproximateTimeSynchronizer http://docs.ros.org/api/message_filters/html/python/
-        self.ts = message_filters.ApproximateTimeSynchronizer([self.image_sub, self.depth_sub], 1, 0.5)
+        self.ts = message_filters.ApproximateTimeSynchronizer([self.image_sub, self.depth_sub], 1, 0.1)
         self.ts.registerCallback(self.imageDepthcallback)
 
         # view gui flag
@@ -57,7 +57,10 @@ class AbstractBot(object):
 
         # center position and max value
         self.loc_centor_x  = np.array([1])
-        self.loc_max_x     = np.array([2])
+        self.loc_max       = np.zeros((2))
+
+        # average depth
+        self.ave_val = np.array([0.0])
 
         # step
         self.step = np.array([0])
@@ -96,10 +99,12 @@ class AbstractBot(object):
 
             if w <= 0:
                 self.loc_centor_x = 640/8;
-                self.loc_max_x    = 640/4;                
+                self.loc_max[0]   = 640/4;
+                self.loc_max[1]   = 480/4;                                
             else:
                 self.loc_centor_x = w/8;
-                self.loc_max_x    = w/4;
+                self.loc_max[0]   = w/4;
+                self.loc_max[1]   = h/4;
 
             # reffer http://answers.ros.org/question/58902/how-to-store-the-depth-data-from-kinectcameradepth_registreredimage_raw-as-gray-scale-image/
             #depth_image = self.bridge.imgmsg_to_cv2(depth_data, "32FC1")            
@@ -115,6 +120,15 @@ class AbstractBot(object):
         #depth_array = np.array(depth_image, dtype=np.float32)
         depth_array = np.array(depth_image_, dtype=np.float32)        
         cv2.normalize(depth_array, depth_array, 0, 1, cv2.NORM_MINMAX)
+
+        #get middle average depth
+        #get 1row    http://qiita.com/supersaiakujin/items/d63c73bb7b5aac43898a
+        #cal average http://programming.blogo.jp/python/average 
+        mid = depth_array[60, ]
+        if 0 < len(mid):
+            self.ave_val = sum(mid) / len(mid)
+        else:
+            self.ave_val = 0
 
         # --- test Red Region ---
         # https://www.blog.umentu.work/python3-opencv3%E3%81%A7%E6%8C%87%E5%AE%9A%E3%81%97%E3%81%9F%E8%89%B2%E3%81%AE%E3%81%BF%E3%82%92%E6%8A%BD%E5%87%BA%E3%81%97%E3%81%A6%E8%A1%A8%E7%A4%BA%E3%81%99%E3%82%8B%E3%80%90%E5%8B%95%E7%94%BB/
@@ -189,7 +203,7 @@ class AbstractBot(object):
             cv2.imshow("Yellow Image window", yel_image)
             #cv2.imshow("Yellow Depth window", yel_depth)                        
             #cv2.imshow("near depth Image window", dep_image)                        
-            cv2.waitKey(10)
+            cv2.waitKey(1)
 
     @abstractmethod
     def strategy(self):
