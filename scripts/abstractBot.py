@@ -128,11 +128,11 @@ class AbstractBot(object):
         #get 1row    http://qiita.com/supersaiakujin/items/d63c73bb7b5aac43898a
         #cal average http://programming.blogo.jp/python/average 
 
-        mid = depth_array[60,:]
-        if 0 < len(mid) and sum(mid) != 0:
-            self.ave_val = sum(mid) / len(mid)
-        else:
-            self.ave_val = 0
+        #mid = depth_array[60,:]
+        #if 0 < len(mid) and sum(mid) != 0:
+        #    self.ave_val = sum(mid) / len(mid)
+        #else:
+        #    self.ave_val = 0
 
         # array access  http://qiita.com/supersaiakujin/items/d63c73bb7b5aac43898a
         

@@ -23,10 +23,12 @@ class RandomBot(AbstractBot):
         control_turn = 0
 
         #max
-        max_control_speed = 2
+        max_control_speed =  0.5
+        min_control_speed = -0.5
 
         #time
-        UPDATE_FREQUENCY = 1
+        #UPDATE_FREQUENCY = 1
+        UPDATE_FREQUENCY = 0.1
         update_time = 0
 
         #flag
@@ -43,13 +45,18 @@ class RandomBot(AbstractBot):
             if self.center_bumper or self.left_bumper or self.right_bumper:
                 self.step = 5                                
                 update_time = time.time()
-                rospy.loginfo('bumper hit!!')
+                rospy.loginfo('bumper hit!!')                       
 
-                control_speed = -1
-                target_speed  = -1
+                control_speed = -0.5
+                target_speed  = -0.5
 
-                control_turn = 1.5
-                target_turn  = 1.5
+                #control_turn = 1
+                #target_turn  = 1
+
+                if self.L_val < self.R_val:
+                    target_turn  = 0.5
+                else:
+                    target_turn  = -0.5 
 
                 # init
                 th_cnt = 0.0
@@ -70,11 +77,11 @@ class RandomBot(AbstractBot):
                 target_speed  = -0.5
 
                 if self.L_val > self.R_val:
-                    control_turn = 0.7
-                    target_turn  = 0.7
+                    control_turn = 1.0
+                    target_turn  = 1.0
                 else:
-                    control_turn = -0.7
-                    target_turn  = -0.7
+                    control_turn = -1.0
+                    target_turn  = -1.0
 
                 # init
                 th_cnt = 0.0
@@ -88,7 +95,7 @@ class RandomBot(AbstractBot):
                 
                 # --- use rgb and depth data ---
                 # step1: extract yellow (yellow)
-                if self.yel_loc[0] != -1 and self.yel_loc[1] != -1:
+                if self.yel_loc[0] != -1 and self.yel_loc[1] != -1 and self.yel_val < self.red_val:
                     self.step = 1
 
                     # init
@@ -112,21 +119,13 @@ class RandomBot(AbstractBot):
                     cen_x = self.loc_centor_x
                     val   = self.red_val
 
-                    th = np.arctan((1.0*(loc_x - cen_x)/cen_x))
+                    th = 0.5*np.arctan((1.5*(loc_x - cen_x)/cen_x))
                     target_turn  = -th
 
-                    if   0.05 < val:
-                        sp = 2
-                    elif 0.04 < val:
-                        sp = 1.8
-                    elif 0.03 < val:
-                        sp = 1.6
-                    elif 0.02 < val:
-                        sp = 1.4
-                    elif 0.01 < val:
-                        sp = 1.2
+                    if   0.01 < val:
+                        sp = 0.50
                     else:
-                        sp = 0.8 
+                        sp = 0.48
                     target_speed = sp
                     
                 # step2: extract red (red)
@@ -154,36 +153,31 @@ class RandomBot(AbstractBot):
                     cen_x = self.loc_centor_x
                     val   = self.red_val
 
-                    th = np.arctan((1.0*(loc_x - cen_x)/cen_x))
+                    th = 0.5*np.arctan((1.5*(loc_x - cen_x)/cen_x))
                     target_turn  = -th
 
-                    if   0.05 < val:
-                        sp = 2
-                    elif 0.04 < val:
-                        sp = 1.8
-                    elif 0.03 < val:
-                        sp = 1.6
-                    elif 0.02 < val:
-                        sp = 1.4
-                    elif 0.01 < val:
-                        sp = 1.2
+                    if   0.01 < val:
+                        sp = 0.50
                     else:
-                        sp = 0.8 
+                        sp = 0.48
                     target_speed = sp
 
-
                 # step3: check total cnt of rotation th (green)
-                elif th_cnt < 10 and (yel_flag or red_flag):
+                elif th_cnt < 15 and (yel_flag or red_flag):
                     self.step = 3
 
                     #init
                     rot_flag = True
 
-                    control_speed = 0
-                    target_speed  = 0
+                    #control_speed = 0
+                    #target_speed  = 0
+                    target_speed  = target_speed - 0.2
 
                     #control_turn = 1.5
-                    target_turn  = 2.0
+                    if self.L_val > self.R_val:
+                        target_turn  = 0.5
+                    else:
+                        target_turn  = -0.5                        
                     th_cnt = th_cnt +1
 
                 # step4: random (while)
@@ -191,22 +185,36 @@ class RandomBot(AbstractBot):
                     self.step = 4
                     
                     # init
-                    th_cnt =   th_cnt - 1
+                    th_cnt =   th_cnt - 5
+                    if th_cnt < 0:
+                        th_cnt = 0
+
                     yel_flag = False
                     red_flag = False
                     rot_flag = False                    
 
                     # random  http://www.python-izm.com/contents/application/random.shtml
-                    target_speed  = random.uniform(-2, -1)
-                    target_turn   = random.uniform(-3.0, -1.5)                    
+                    rand = random.uniform(0.0, 1.0)
+                    if   0.75 < rand:
+                        target_speed  = -0.5
+                        target_turn   = -3
+                    elif 0.50 < rand:
+                        target_speed  = 0.5
+                        target_turn   = -3
+                    elif 0.25 < rand:
+                        target_speed  = 0.5
+                        target_turn   = -3
+                    else:
+                        target_speed  = 0.5
+                        target_turn   = 3
 
             #print http://programming-study.com/technology/python-print/
             print('speed(%f, %f)_turn(%f, %f)_th(%f)_sp(%f)_(%f, %f, %f)_ave(%f)' %(target_speed, control_speed, target_turn, control_turn, th, sp, self.L_val, self.M_val, self.R_val, self.ave_val))
 
             # def 0.02
-            del_speed  = 0.04
+            del_speed  = 0.1
             # def 0.1
-            del_turn   = 0.1
+            del_turn   = 0.2
 
             if target_speed > control_speed:
                 control_speed = min( target_speed, control_speed + del_speed )
@@ -217,6 +225,7 @@ class RandomBot(AbstractBot):
 
             #max speed check
             control_speed = min (control_speed, max_control_speed)
+            control_speed = max (control_speed, min_control_speed)
 
             if target_turn > control_turn:
                 control_turn = min( target_turn, control_turn + del_turn )
