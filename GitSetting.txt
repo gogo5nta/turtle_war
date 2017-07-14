@@ -1,0 +1,57 @@
+--- 初期設定 ------------------------------------------------
+vscode setting
+
+# setting global configuration
+$ git config --global user.email "gogo5nta@gmail.com"
+$ git config --global user.name "Tomohide Ishigami"
+
+# To be sure Run
+$ git config --global -l
+
+参考
+　SourceTreeでGitのコミットができない時の対応
+　http://unitygeek.hatenablog.com/entry/2015/02/10/114616
+
+--- コミット(localに反映)、pull(サーバーへ反映) ---------------
+username: ID
+pass    : PASS
+
+参考
+　Visual Studio CodeでGitを利用する
+　http://www.atmarkit.co.jp/ait/articles/1507/21/news017_2.html
+
+　サルでもわかるGit入門
+　http://www.backlog.jp/git-guide/
+
+--- tag関係 ----------------------------------------------------
+シンプル
+　git tag タグ
+
+コメント付
+　git tag -a タグ -m 'タグのコメント'
+
+tag共有
+　git push origin タグ名
+
+tag確認
+　git tag
+
+タグからチェックアウトしてブランチを作成する
+　git checkout refs/tags/{タグ名}
+
+参考
+　git tagの使い方まとめ
+　http://qiita.com/growsic/items/ed67e03fda5ab7ef9d08
+
+--- Fortしたリモート先の更新をローカルに反映 ---
+1.　リモートリポジトリにOneNightROBOCON/turtle_warを追加
+2.　OneNightROBOCON/turtle_war から最新版をfetch(ダウンロードしてくること)
+3.　ローカルの最新版にfetchしたOneNightROBOCON/turtle_warの最新版をmerge(統合)
+※upstreamは何でもOK
+
+git remote add upstream git://github.com/OneNightROBOCON/turtle_war
+git fetch upstream
+git merge upstream/master
+
+参考ここ↓の説明がシンプルでわかりやすいです。
+http://qiita.com/xtetsuji/items/555a1ef19ed21ee42873
