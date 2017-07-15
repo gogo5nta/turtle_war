@@ -17,8 +17,7 @@
   <node pkg="turtle_war" type="velControl.py" name="limit"/>
 
   <!-- commentout forr vscode debug randomBot.py -->
-  <!-- 
   <include file="$(find turtle_war)/launch/yourBot.launch"> 
   </include>
-  -->
+
 </launch>
