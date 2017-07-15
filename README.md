@@ -212,3 +212,6 @@ turtle_war/
 - ROS : indigo
 - GAZEBO : 2
 - Python : 2.7
+
+## debug
+debug.txtを参照
