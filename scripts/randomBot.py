@@ -95,7 +95,7 @@ class RandomBot(AbstractBot):
                 
                 # --- use rgb and depth data ---
                 # step1: extract yellow (yellow)
-                if self.yel_loc[0] != -1 and self.yel_loc[1] != -1 and self.yel_val < self.red_val:
+                if self.yel_loc[0] != -1 and self.yel_loc[1] != -1:
                     self.step = 1
 
                     # init
