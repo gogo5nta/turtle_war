@@ -12,7 +12,7 @@ from geometry_msgs.msg import Twist
 class RandomBot(AbstractBot):
     
     def strategy(self):
-        r = rospy.Rate(100)
+        r = rospy.Rate(10)
 
         #target        
         target_speed = 0
@@ -210,7 +210,7 @@ class RandomBot(AbstractBot):
                         target_turn   = 3
 
             #print http://programming-study.com/technology/python-print/
-            print('speed(%f, %f)_turn(%f, %f)_th(%f)_sp(%f)_(%f, %f, %f)_ave(%f)' %(target_speed, control_speed, target_turn, control_turn, th, sp, self.L_val, self.M_val, self.R_val, self.ave_val))
+            #print('speed(%f, %f)_turn(%f, %f)_th(%f)_sp(%f)_(%f, %f, %f)_ave(%f)' %(target_speed, control_speed, target_turn, control_turn, th, sp, self.L_val, self.M_val, self.R_val, self.ave_val))
 
             # def 0.02
             del_speed  = 0.1
