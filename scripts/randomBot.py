@@ -162,23 +162,24 @@ class RandomBot(AbstractBot):
                         sp = 0.48
                     target_speed = sp
 
-                # step3: check total cnt of rotation th (green)
-                elif th_cnt < 15 and (yel_flag or red_flag):
-                    self.step = 3
+                
+                # # step3: check total cnt of rotation th (green)
+                # elif th_cnt < 15 and (yel_flag or red_flag):
+                #     self.step = 3
 
-                    #init
-                    rot_flag = True
+                #     #init
+                #     rot_flag = True
 
-                    #control_speed = 0
-                    #target_speed  = 0
-                    target_speed  = target_speed - 0.2
+                #     #control_speed = 0
+                #     #target_speed  = 0
+                #     target_speed  = target_speed - 0.2
 
-                    #control_turn = 1.5
-                    if self.L_val > self.R_val:
-                        target_turn  = 0.5
-                    else:
-                        target_turn  = -0.5                        
-                    th_cnt = th_cnt +1
+                #     #control_turn = 1.5
+                #     if self.L_val > self.R_val:
+                #         target_turn  = 0.5
+                #     else:
+                #         target_turn  = -0.5                        
+                #     th_cnt = th_cnt +1
 
                 # step4: random (while)
                 else:
